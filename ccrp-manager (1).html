@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCRP IX Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@400;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0a03;--bg2:#150f04;--bg3:#1c1407;--bg4:#241809;--bg5:#2e1f0d;
+  --bdr:#3a2608;--bdr2:#5a3c10;--bdr3:#7a5218;
+  --gold:#f0c040;--gold2:#c09020;--gold3:#7a5a10;
+  --tan:#e8d5a3;--mut:#a08040;--dark:#6a4c14;
+  --grn:#3d8b3d;--grn2:#52b052;--grn3:#c8f0c8;
+  --red:#b03020;--red2:#d04030;--red3:#ffd0c8;
+  --blu:#3060a0;--blu2:#4488cc;--blu3:#c0d8f8;
+  --amb:#c07820;--amb2:#e09830;--amb3:#fef0c0;
+  --r:5px;
+}
+html,body{height:100%;background:var(--bg);color:var(--tan);font-family:'Crimson Text',Georgia,serif;font-size:15px;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+/* layout */
+#app{display:flex;flex-direction:column;height:100vh}
+header{background:linear-gradient(#3a2608,#150f04);border-bottom:2px solid var(--bdr2);padding:8px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+header h1{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);letter-spacing:2px}
+header p{font-size:11px;color:var(--mut);margin-top:1px}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:7px}
+
+/* res bar */
+#res-bar{display:flex;gap:5px;padding:5px 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0;flex-wrap:wrap;align-items:center;min-height:34px}
+.res-bar-lbl{font-size:10px;color:var(--dark);text-transform:uppercase;letter-spacing:1px;margin-right:2px;white-space:nowrap}
+.rc{display:inline-flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--bdr);border-radius:20px;padding:2px 9px 2px 6px;font-size:12px;cursor:default;transition:border-color .1s}
+.rc:hover{border-color:var(--bdr3)}
+.rc .ri{font-size:13px}
+.rc .rn{color:var(--mut);font-size:10px;margin-right:1px}
+.rc .rv{color:var(--tan);font-weight:600}
+.rc .rd{font-size:10px;margin-left:2px}
+.rc .rd.pos{color:var(--grn2)}.rc .rd.neg{color:var(--red2)}.rc .rd.zer{color:var(--mut)}
+.yr-badge{font-family:'Cinzel',serif;font-size:12px;color:var(--gold2);background:var(--bg4);border:1px solid var(--bdr2);border-radius:20px;padding:2px 11px;margin-left:auto;white-space:nowrap}
+
+/* nav */
+.nav-bar{display:flex;background:var(--bg2);border-bottom:2px solid var(--bdr);flex-shrink:0}
+.nav-btn{padding:6px 16px;font-size:11px;font-family:inherit;cursor:pointer;border:none;background:transparent;color:var(--mut);letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+.nav-btn:hover{color:var(--tan)}.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* pages */
+.page{display:none;flex:1;overflow:hidden}.page.active{display:flex}
+
+/* buttons */
+.btn{padding:4px 11px;font-size:12px;font-family:inherit;border-radius:var(--r);cursor:pointer;transition:all .15s;border:1px solid;letter-spacing:.4px;white-space:nowrap}
+.bg{background:var(--gold3);border-color:var(--gold2);color:var(--gold)}.bg:hover{background:var(--gold2);color:#111}
+.bgrn{background:rgba(61,139,61,.25);border-color:var(--grn2);color:var(--grn2)}.bgrn:hover{background:var(--grn);color:#fff}
+.bred{background:transparent;border-color:var(--red);color:var(--red)}.bred:hover{background:var(--red);color:#fff}
+.bblu{background:rgba(48,96,160,.25);border-color:var(--blu2);color:var(--blu2)}.bblu:hover{background:var(--blu);color:#fff}
+.bamb{background:rgba(192,120,32,.25);border-color:var(--amb2);color:var(--amb2)}.bamb:hover{background:var(--amb);color:#111}
+.bgh{background:transparent;border-color:var(--bdr2);color:var(--mut)}.bgh:hover{border-color:var(--gold);color:var(--tan)}
+.btn-sm{padding:3px 8px;font-size:11px}.btn-xs{padding:1px 6px;font-size:10px}
+
+/* inputs */
+input[type=text],input[type=number],select{background:var(--bg3);border:1px solid var(--bdr2);color:var(--tan);font-family:inherit;font-size:13px;border-radius:var(--r);padding:3px 7px}
+input[type=number]{text-align:center}
+input:focus,select:focus{outline:none;border-color:var(--gold2)}
+select option{background:var(--bg3)}
+
+/* cards */
+.card{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px}
+.card-hdr{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+
+/* modal */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center}
+.moverlay.open{display:flex}
+.modal{background:var(--bg3);border:2px solid var(--bdr2);border-radius:10px;padding:20px;max-width:580px;width:92%;max-height:88vh;overflow-y:auto;position:relative}
+.modal h2{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-bottom:14px}
+.mcl{position:absolute;top:11px;right:13px;background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;line-height:1}
+.mcl:hover{color:var(--red2)}
+.mfooter{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;border-top:1px solid var(--bdr);padding-top:11px}
+
+/* toast */
+#toast{position:fixed;bottom:18px;right:18px;background:var(--bg4);border:1px solid var(--bdr2);border-radius:var(--r);padding:7px 15px;font-size:12px;color:var(--tan);z-index:200;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+
+/* ═══════════════════════════════════
+   OVERVIEW PAGE
+═══════════════════════════════════ */
+#page-ov{flex-direction:column;gap:0;overflow-y:auto}
+.ov-wrap{display:flex;gap:14px;padding:14px;flex-wrap:wrap;align-items:flex-start}
+.ov-col{flex:1;min-width:270px;max-width:500px;display:flex;flex-direction:column;gap:12px}
+.res-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.res-tbl th{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;padding:3px 7px;border-bottom:1px solid var(--bdr);text-align:left;font-weight:400}
+.res-tbl td{padding:4px 7px;border-bottom:1px solid var(--bdr)}
+.res-tbl tr:last-child td{border-bottom:none}
+td.rval{text-align:right;font-size:14px;font-weight:600;color:var(--gold)}
+td.delta{text-align:right;font-size:11px}
+td.delta.pos{color:var(--grn2)}td.delta.neg{color:var(--red2)}td.delta.zer{color:var(--mut)}
+.log-entry{font-size:11px;padding:5px 8px;border-bottom:1px solid var(--bdr);line-height:1.6}
+.log-entry:last-child{border-bottom:none}
+.log-yr{font-weight:600;color:var(--gold2)}
+.log-ch-pos{color:var(--grn2)}.log-ch-neg{color:var(--red2)}
+
+/* ═══════════════════════════════════
+   CITIES PAGE
+═══════════════════════════════════ */
+#page-ci{overflow:hidden}
+.ci-layout{display:flex;flex:1;overflow:hidden;width:100%}
+#ci-side{width:198px;flex-shrink:0;background:var(--bg2);border-right:2px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.ci-side-hdr{padding:9px 11px 8px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ci-side-hdr span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1.5px}
+.ci-list{flex:1;overflow-y:auto}
+.ci-item{padding:8px 11px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .1s;display:flex;align-items:center;gap:6px}
+.ci-item:hover{background:var(--bg3)}.ci-item.sel{background:var(--bg4);border-left:3px solid var(--gold)}
+.ci-nm{font-size:13px;color:var(--tan);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci-ct{font-size:10px;color:var(--dark)}
+.ci-pop{font-size:10px;color:var(--mut)}
+.ci-del{font-size:13px;color:var(--bdr2);cursor:pointer;flex-shrink:0;transition:color .1s}.ci-del:hover{color:var(--red2)}
+#ci-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.ci-main-hdr{padding:9px 15px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ci-main-hdr h2{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);flex:1}
+.ci-tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 12px;background:var(--bg2)}
+.ci-tab{padding:5px 13px;font-size:11px;font-family:inherit;cursor:pointer;border:none;background:transparent;color:var(--mut);text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s}
+.ci-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.ci-body{flex:1;overflow-y:auto;padding:11px 13px}
+.no-city{flex:1;display:flex;align-items:center;justify-content:center;color:var(--bdr2);font-style:italic;font-size:14px}
+
+/* asset rows in city */
+.arow{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 11px;display:flex;align-items:center;gap:9px;margin-bottom:6px;transition:border-color .1s}
+.arow:hover{border-color:var(--bdr2)}
+.arow.upg{border-left:3px solid var(--amb2)}
+.arow.dis{border-left:3px solid var(--red2);opacity:.7}
+.ar-ico{font-size:17px;flex-shrink:0}
+.ar-inf{flex:1;min-width:0}
+.ar-nm{font-size:13px;color:var(--tan)}
+.ar-sub{font-size:10px;color:var(--dark);margin-top:1px}
+.ar-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.chip{font-size:10px;padding:1px 6px;border-radius:10px;white-space:nowrap}
+.ch-cost{background:var(--bg4);border:1px solid var(--bdr2);color:var(--mut)}
+.ch-out{background:rgba(61,139,61,.2);border:1px solid var(--grn);color:var(--grn2)}
+.ch-upk{background:rgba(176,48,32,.2);border:1px solid var(--red);color:var(--red2)}
+.ch-cap{background:rgba(48,96,160,.2);border:1px solid var(--blu2);color:var(--blu3)}
+.ch-upg{background:rgba(192,120,32,.2);border:1px solid var(--amb2);color:var(--amb2)}
+.ch-dis{background:rgba(176,48,32,.15);border:1px solid var(--red);color:var(--red)}
+.ar-acts{display:flex;gap:3px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+
+/* ═══════════════════════════════════
+   PLANNER PAGE
+═══════════════════════════════════ */
+#page-pl{overflow:hidden}
+.pl-layout{display:flex;flex:1;overflow:hidden;width:100%}
+#pl-left{width:256px;flex-shrink:0;background:var(--bg2);border-right:2px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.pl-tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.pl-tab{flex:1;padding:6px;font-size:11px;font-family:inherit;cursor:pointer;border:none;background:transparent;color:var(--mut);text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;text-align:center}
+.pl-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.fbar{padding:7px 10px 6px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.fbar label{font-size:10px;color:var(--dark);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:4px}
+.fbtns{display:flex;flex-wrap:wrap;gap:3px}
+.fbtn{padding:2px 6px;font-size:10px;border-radius:3px;border:1px solid var(--bdr);background:transparent;color:var(--mut);cursor:pointer;font-family:inherit;transition:all .12s}
+.fbtn:hover{border-color:var(--gold2);color:var(--gold2)}.fbtn.active{background:var(--dark);border-color:var(--gold);color:var(--gold)}
+.itmlist{flex:1;overflow-y:auto}
+.brow{padding:7px 10px;border-bottom:1px solid #1a1105;cursor:pointer;transition:background .1s}
+.brow:hover{background:#1e1608}.brow.exp{background:var(--bg4)}
+.brow-top{display:flex;justify-content:space-between;align-items:center}
+.bnm{font-size:13px;color:var(--tan)}.bsub{font-size:10px;color:var(--dark);margin-top:1px}
+.addbtn{background:var(--dark);border:1px solid var(--gold);color:var(--gold);border-radius:3px;width:21px;height:21px;font-size:16px;line-height:1;cursor:pointer;font-weight:bold;flex-shrink:0;transition:background .1s}
+.addbtn:hover{background:var(--gold2);color:#111}
+.bdet{display:none;margin-top:4px;font-size:11px;color:var(--mut);line-height:1.7}
+.brow.exp .bdet{display:block}
+.clbl{color:var(--dark);font-size:10px;text-transform:uppercase}
+
+#pl-center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.pl-qhdr{padding:8px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.pl-qhdr h2{font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.netbar{display:flex;gap:5px;flex-wrap:wrap;padding:6px 13px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0;min-height:30px;align-items:center}
+.nch{font-size:11px;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.nch.pos{background:rgba(61,139,61,.2);border:1px solid var(--grn);color:var(--grn2)}
+.nch.neg{background:rgba(176,48,32,.2);border:1px solid var(--red);color:var(--red2)}
+.nch.zer{background:var(--bg4);border:1px solid var(--bdr2);color:var(--mut)}
+#q-list{flex:1;overflow-y:auto;padding:9px 12px;display:flex;flex-direction:column;gap:5px}
+.empty-msg{flex:1;display:flex;align-items:center;justify-content:center;color:var(--bdr2);font-size:13px;text-align:center;padding:40px;font-style:italic}
+.qi{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 11px;display:flex;flex-direction:column;gap:5px}
+.qi.mil{border-left:2px solid var(--blu)}.qi.bld{border-left:2px solid var(--bdr2)}
+.qi-top{display:flex;align-items:center;gap:8px}
+.qi-nm{width:134px;flex-shrink:0}
+.qi-nm .n{font-size:13px;color:var(--tan)}.qi-nm .p{font-size:10px;color:var(--dark);margin-top:1px}
+.qi-ctrls{display:flex;align-items:center;gap:7px;flex:1;flex-wrap:wrap}
+.cg{display:flex;align-items:center;gap:3px}
+.clb{font-size:10px;color:var(--dark);white-space:nowrap}
+.lvbtn{background:var(--bg4);border:1px solid var(--bdr);color:var(--mut);width:21px;height:21px;border-radius:3px;cursor:pointer;font-size:14px;line-height:1;font-family:inherit;transition:all .1s}
+.lvbtn:hover{border-color:var(--gold2);color:var(--gold)}
+.ni{text-align:center;background:var(--bg);border:1px solid var(--dark);color:var(--gold);font-size:13px;border-radius:3px;padding:2px 0;font-family:inherit}
+.ni:focus{outline:none;border-color:var(--gold)}
+.lvi{width:36px}.qti{width:48px}.dpi{width:42px}
+.rmbtn{background:transparent;border:none;color:var(--bdr2);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;margin-left:auto;flex-shrink:0;transition:color .1s}
+.rmbtn:hover{color:var(--red2)}
+.qi-bot{display:flex;gap:5px;flex-wrap:wrap;align-items:flex-start}
+.chg{display:flex;flex-direction:column;gap:2px}
+.cgl{font-size:9px;text-transform:uppercase;letter-spacing:.8px}
+.cgl.lc{color:var(--mut)}.cgl.lo{color:var(--grn)}.cgl.lu{color:var(--red)}.cgl.lp{color:var(--blu2)}
+.chs{display:flex;gap:4px;flex-wrap:wrap}
+.cc{text-align:center;min-width:38px}
+.cc .cr{font-size:9px}.cc .cv{font-size:11px;font-weight:600}
+.cc.c .cr{color:var(--dark)}.cc.c .cv{color:var(--tan)}
+.cc.o .cr{color:var(--grn)}.cc.o .cv{color:var(--grn2)}
+.cc.u .cr{color:var(--red)}.cc.u .cv{color:var(--red2)}
+.cc.p .cr{color:var(--blu)}.cc.p .cv{color:var(--blu2)}
+.cdiv{width:1px;background:var(--bdr);margin:0 2px;align-self:stretch;flex-shrink:0}
+
+#pl-right{width:184px;flex-shrink:0;background:var(--bg2);border-left:2px solid var(--bdr);padding:11px 10px;display:flex;flex-direction:column;gap:7px;overflow-y:auto}
+.pr-ttl{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.psl{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.psl.c{color:var(--mut)}.psl.o{color:var(--grn2)}.psl.u{color:var(--red2)}
+.sdiv{border:none;border-top:1px solid var(--bdr)}
+.tcrd{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);padding:6px 9px}
+.tcrd .tr{font-size:10px;color:var(--dark);margin-bottom:1px}
+.tcrd .tv{font-size:17px;color:var(--gold);font-weight:600}
+.tcrd.out .tr{color:var(--grn)}.tcrd.out .tv{color:var(--grn2);font-size:14px}
+.tcrd.upk .tr{color:var(--red)}.tcrd.upk .tv{color:var(--red2);font-size:14px}
+
+/* year end modal */
+.ye-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px}
+.ye-col h3{font-size:10px;text-transform:uppercase;letter-spacing:1px;padding-bottom:4px;border-bottom:1px solid var(--bdr);margin-bottom:6px}
+.ye-col.inc h3{color:var(--grn2)}.ye-col.exp h3{color:var(--red2)}.ye-col.net h3{color:var(--gold)}
+.ye-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
+.ye-row .yr{color:var(--mut)}.yv.pos{color:var(--grn2)}.yv.neg{color:var(--red2)}.yv.nt{color:var(--tan)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<header>
+  <span style="font-size:24px">🏰</span>
+  <div><h1>CCRP IX Manager</h1><p>Empire planner · City manager · Resource ledger</p></div>
+  <div class="hdr-r">
+    <button class="btn bamb" onclick="openYearEnd()">📅 Advance Year</button>
+    <button class="btn bgh btn-sm" onclick="resetAll()">↺ Reset</button>
+  </div>
+</header>
+
+<!-- RESOURCE BAR -->
+<div id="res-bar">
+  <span class="res-bar-lbl">Treasury</span>
+  <div id="res-chips" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+  <div class="yr-badge" id="yr-badge">Year 712</div>
+</div>
+
+<!-- NAV -->
+<div class="nav-bar">
+  <button class="nav-btn active" onclick="nav('ov')">📊 Overview</button>
+  <button class="nav-btn" onclick="nav('ci')">🏙️ Cities</button>
+  <button class="nav-btn" onclick="nav('pl')">📋 Planner</button>
+</div>
+
+<!-- ═══ OVERVIEW ═══ -->
+<div class="page active" id="page-ov">
+  <div class="ov-wrap">
+    <div class="ov-col">
+      <div class="card">
+        <div class="card-hdr">💰 Resources</div>
+        <table class="res-tbl" id="ov-res-tbl"></table>
+        <div style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap;align-items:center">
+          <select id="adj-res" style="flex:1;min-width:90px"></select>
+          <input type="number" id="adj-amt" placeholder="±amount" style="flex:1;min-width:70px">
+          <input type="text" id="adj-note" placeholder="Note (optional)" style="flex:2;min-width:110px">
+          <button class="btn bgh btn-sm" onclick="applyAdj()">Apply</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">📈 Projected Net / Year (all cities)</div>
+        <table class="res-tbl" id="ov-net-tbl"></table>
+      </div>
+    </div>
+    <div class="ov-col">
+      <div class="card" style="flex:1">
+        <div class="card-hdr">📜 History <button class="btn bgh btn-xs" onclick="clearLog()">Clear</button></div>
+        <div id="hist-log" style="max-height:400px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CITIES ═══ -->
+<div class="page" id="page-ci">
+  <div class="ci-layout">
+    <div id="ci-side">
+      <div class="ci-side-hdr">
+        <span>Cities</span>
+        <button class="btn bg btn-xs" onclick="addCity()">+ New</button>
+      </div>
+      <div class="ci-list" id="ci-list"></div>
+    </div>
+    <div id="ci-main">
+      <div class="no-city" id="no-city">← Select or create a city</div>
+      <div id="ci-editor" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+        <div class="ci-main-hdr">
+          <h2 id="ci-editor-nm">City</h2>
+          <button class="btn bgh btn-sm" onclick="renameCity()">✏️ Rename</button>
+          <button class="btn bred btn-sm" onclick="delSelCity()">🗑 Delete</button>
+        </div>
+        <div class="ci-tabs">
+          <button class="ci-tab active" onclick="setCiTab('b')">🏗️ Buildings</button>
+          <button class="ci-tab" onclick="setCiTab('m')">⚔️ Military</button>
+          <button class="ci-tab" onclick="setCiTab('p')">👥 Population</button>
+        </div>
+        <div class="ci-body" id="ci-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PLANNER ═══ -->
+<div class="page" id="page-pl">
+  <div class="pl-layout">
+    <div id="pl-left">
+      <div class="pl-tabs">
+        <button class="pl-tab active" onclick="setPTab('b')">🏗️ Bldgs</button>
+        <button class="pl-tab" onclick="setPTab('m')">⚔️ Mil</button>
+      </div>
+      <div class="fbar">
+        <label id="pl-flbl">Filter</label>
+        <div class="fbtns" id="pl-fbtns"></div>
+      </div>
+      <div class="itmlist" id="pl-itmlist"></div>
+    </div>
+    <div id="pl-center">
+      <div class="pl-qhdr">
+        <h2>📋 Queue &nbsp;<span id="q-count" style="color:var(--mut);font-weight:400">0 items</span></h2>
+        <button class="btn bgh btn-sm" onclick="clearQ()">Clear</button>
+        <select id="deploy-sel" style="font-size:11px;padding:2px 6px;flex:1;min-width:0">
+          <option value="">— Deploy to city —</option>
+        </select>
+        <button class="btn bgrn btn-sm" onclick="deployQ()">✅ Deploy</button>
+      </div>
+      <div class="netbar" id="netbar"><span style="font-size:11px;color:var(--bdr2)">Add items to see net output</span></div>
+      <div id="q-list">
+        <div class="empty-msg" id="empty-msg">← Click <b>+</b> next to an item to add it to your queue</div>
+      </div>
+    </div>
+    <div id="pl-right">
+      <div class="pr-ttl">📦 Totals</div>
+      <p style="font-size:11px;color:var(--bdr2);font-style:italic" id="pl-no-tot">Nothing in queue.</p>
+      <div id="pl-tots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ YEAR END MODAL ═══ -->
+<div class="moverlay" id="m-ye">
+  <div class="modal">
+    <button class="mcl" onclick="closeM('m-ye')">✕</button>
+    <h2>📅 Advance to Year <span id="ye-next-yr"></span></h2>
+    <div id="ye-body"></div>
+    <div class="mfooter">
+      <button class="btn bgh" onclick="closeM('m-ye')">Cancel</button>
+      <button class="btn bamb" onclick="confirmYE()">✅ Confirm &amp; Advance</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD ASSET MODAL ═══ -->
+<div class="moverlay" id="m-add">
+  <div class="modal" style="max-width:460px">
+    <button class="mcl" onclick="closeM('m-add')">✕</button>
+    <h2 id="m-add-ttl">Add to City</h2>
+    <div id="m-add-body"></div>
+    <div class="mfooter">
+      <button class="btn bgh" onclick="closeM('m-add')">Cancel</button>
+      <button class="btn bgrn" id="m-add-ok">Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// GAME DATA
+// ═══════════════════════════════════════════════════════
+const BD = [ // Buildings def
+  {n:"Mine",c:"Resource-Producing",e:"⛏️",req:null,
+   build:{Timber:6,Iron:6,Stone:5,Nockings:1000},up:{Timber:3,Iron:3,Stone:2,Nockings:500},
+   ot:"res",or:"Iron/Gold",uk:null},
+  {n:"Lumber Camp",c:"Resource-Producing",e:"🪵",req:null,
+   build:{Timber:5,Iron:10,Nockings:500},up:{Timber:2,Iron:5,Nockings:500},
+   ot:"res",or:"Timber",uk:null},
+  {n:"Plantation",c:"Resource-Producing",e:"🌿",req:null,
+   build:{Timber:5,Iron:5,Nockings:1000},up:{Timber:2,Iron:2,Nockings:500},
+   ot:"res",or:"Textiles",uk:null},
+  {n:"Quarry",c:"Resource-Producing",e:"🪨",req:null,
+   build:{Timber:10,Iron:5,Nockings:1500},up:{Timber:5,Iron:2,Nockings:750},
+   ot:"res",or:"Stone",uk:null},
+  {n:"Farm",c:"Resource-Producing",e:"🌾",req:null,
+   build:{Timber:4,Stone:2,Nockings:200},up:{Timber:2,Stone:1,Nockings:100},
+   ot:"res",or:"Food",uk:null},
+  {n:"Woodshop",c:"Nock (Consuming)",e:"🪚",req:null,
+   build:{Timber:5,Iron:2,Stone:5,Nockings:1000},up:{Timber:2,Iron:1,Stone:2,Nockings:500},
+   ot:"nk",nk:500,uk:{Timber:1}},
+  {n:"Loom",c:"Nock (Consuming)",e:"🧵",req:null,
+   build:{Timber:5,Iron:2,Stone:5,Nockings:1000},up:{Timber:2,Iron:1,Stone:2,Nockings:500},
+   ot:"nk",nk:500,uk:{Textiles:1}},
+  {n:"Metal Workshop",c:"Nock (Consuming)",e:"⚒️",req:null,
+   build:{Timber:5,Iron:2,Stone:5,Nockings:1000},up:{Timber:2,Iron:1,Stone:2,Nockings:500},
+   ot:"nk",nk:500,uk:{Iron:1}},
+  {n:"Grain Mill",c:"Nock (Consuming)",e:"🌀",req:null,
+   build:{Timber:5,Iron:2,Stone:5,Nockings:1000},up:{Timber:2,Iron:1,Stone:2,Nockings:500},
+   ot:"nk",nk:500,uk:{Food:1}},
+  {n:"Mint",c:"Nock (Consuming)",e:"🏛️",req:"Town+",
+   build:{Timber:6,Iron:4,Stone:6,Nockings:1200},up:{Timber:3,Iron:2,Stone:3,Nockings:600},
+   ot:"nk",nk:2000,uk:{Gold:1}},
+  {n:"Church",c:"Nock (Base)",e:"⛪",req:null,
+   build:{Timber:6,Iron:2,Stone:10,Nockings:1400},up:{Timber:3,Iron:1,Stone:5,Nockings:700},
+   ot:"nk",nk:400,uk:null},
+  {n:"Tax Office",c:"Nock (Unlocked)",e:"📜",req:"Village+",
+   build:{Timber:10,Stone:10,Nockings:1200},up:{Timber:5,Stone:5,Nockings:600},
+   ot:"nk",nk:600,uk:null},
+  {n:"Market Square",c:"Nock (Unlocked)",e:"🏪",req:"Village+",
+   build:{Timber:10,Stone:10,Nockings:1600},up:{Timber:5,Stone:5,Nockings:800},
+   ot:"nk",nk:800,uk:null},
+  {n:"Customs Office",c:"Nock (Unlocked)",e:"🚢",req:"Town+",
+   build:{Timber:10,Stone:10,Nockings:1400},up:{Timber:5,Stone:5,Nockings:700},
+   ot:"nk",nk:700,uk:null},
+  {n:"Banking House",c:"Nock (Unlocked)",e:"🏦",req:"City+",
+   build:{Timber:8,Iron:2,Stone:8,Nockings:2000},up:{Timber:4,Iron:1,Stone:4,Nockings:1000},
+   ot:"nk",nk:1000,uk:null},
+  {n:"Cathedral",c:"Nock (Unlocked)",e:"🕍",req:"Town+",
+   build:{Timber:10,Iron:6,Stone:10,Nockings:2400},up:{Timber:5,Iron:3,Stone:5,Nockings:1200},
+   ot:"nk",nk:1200,uk:null},
+  {n:"Monastery",c:"Nock (Unlocked)",e:"🏯",req:null,
+   build:{Timber:8,Iron:4,Stone:10,Nockings:1600},up:{Timber:4,Iron:2,Stone:5,Nockings:800},
+   ot:"nk",nk:800,uk:null},
+  {n:"Industrial Mill",c:"Nock (Industrial)",e:"🏭",req:"Town+",
+   build:{Timber:6,Iron:4,Stone:6,Nockings:1600},up:{Timber:3,Iron:2,Stone:3,Nockings:800},
+   ot:"nk",nk:1200,uk:{Food:1}},
+  {n:"Industrial Textile Mill",c:"Nock (Industrial)",e:"🏭",req:"Town+",
+   build:{Timber:6,Iron:4,Stone:6,Nockings:1600},up:{Timber:3,Iron:2,Stone:3,Nockings:800},
+   ot:"nk",nk:1200,uk:{Textiles:1}},
+  {n:"Industrial Metalshop",c:"Nock (Industrial)",e:"🏭",req:"Town+",
+   build:{Timber:6,Iron:4,Stone:6,Nockings:1600},up:{Timber:3,Iron:2,Stone:3,Nockings:800},
+   ot:"nk",nk:1200,uk:{Iron:1}},
+  {n:"Industrial Woodshop",c:"Nock (Industrial)",e:"🏭",req:"Town+",
+   build:{Timber:6,Iron:4,Stone:6,Nockings:1600},up:{Timber:3,Iron:2,Stone:3,Nockings:800},
+   ot:"nk",nk:1200,uk:{Timber:1}},
+  {n:"Royal Mint",c:"Nock (Industrial)",e:"👑",req:"Town+",
+   build:{Timber:6,Iron:4,Stone:6,Nockings:1600},up:{Timber:3,Iron:2,Stone:3,Nockings:800},
+   ot:"nk",nk:5000,uk:{Gold:1}},
+];
+
+const UD = [ // Units def
+  {n:"Warrior",c:"Infantry",e:"⚔️",req:null,bs:100,
+   cost:{Timber:1,Iron:2,Food:2,Textiles:1},uk:{Food:1},cap:null},
+  {n:"Serf",c:"Infantry",e:"🧑‍🌾",req:"Manorialism",bs:100,
+   cost:{Timber:1,Textiles:1,Food:1},uk:{Food:1},cap:null},
+  {n:"Archer",c:"Infantry",e:"🏹",req:null,bs:100,
+   cost:{Timber:3,Iron:1,Food:2,Textiles:3},uk:{Food:1,Nockings:100},cap:null},
+  {n:"Raiders",c:"Infantry",e:"🪓",req:"Longship + Warrior",bs:100,
+   cost:{Timber:2,Iron:2,Food:3,Textiles:2},uk:{Food:1,Gold:1,Nockings:100},cap:null},
+  {n:"Man-at-Arms",c:"Infantry",e:"🛡️",req:"Manorialism",bs:100,
+   cost:{Timber:1,Iron:3,Food:3,Textiles:2},uk:{Food:2,Nockings:200},cap:null},
+  {n:"Crossbowman",c:"Infantry",e:"🎯",req:"Archer + Castle",bs:100,
+   cost:{Timber:1,Food:1,Iron:2,Textiles:3},uk:{Food:1,Nockings:200},cap:null},
+  {n:"Cavalry",c:"Cavalry",e:"🐴",req:null,bs:100,
+   cost:{Iron:1,Food:5,Textiles:3},uk:{Food:3,Nockings:200},cap:null},
+  {n:"Cataphract",c:"Cavalry",e:"🏇",req:null,bs:100,
+   cost:{Iron:3,Food:6,Textiles:3},uk:{Food:4,Nockings:200},cap:null},
+  {n:"Horse Archer",c:"Cavalry",e:"🏹",req:"Cavalry + Archer",bs:100,
+   cost:{Timber:2,Food:4,Textiles:2},uk:{Food:2,Nockings:100},cap:null},
+  {n:"Knight",c:"Cavalry",e:"⚜️",req:"Cataphract + Feudalism",bs:100,
+   cost:{Iron:2,Food:8,Textiles:3},uk:{Food:6,Nockings:300},cap:null},
+  {n:"Crusader",c:"Cavalry",e:"✝️",req:"Holy Order",bs:100,
+   cost:{Iron:3,Food:8,Textiles:3},uk:{Food:6,Nockings:300},cap:null},
+  {n:"Catapult",c:"Siege Engine",e:"🪨",req:null,bs:1,
+   cost:{Timber:7,Iron:1,Textiles:2},uk:null,cap:null},
+  {n:"Trebuchet",c:"Siege Engine",e:"🏗️",req:"Catapult + Engineering",bs:1,
+   cost:{Timber:10,Iron:1,Textiles:2,Stone:2},uk:null,cap:null},
+  {n:"Galley",c:"Ship",e:"🚣",req:null,bs:50,
+   cost:{Timber:15,Iron:2,Textiles:4},uk:null,cap:1},
+  {n:"Longship",c:"Ship",e:"🛶",req:"Galley",bs:50,
+   cost:{Timber:8,Textiles:3},uk:null,cap:2},
+  {n:"Cog",c:"Ship",e:"⛵",req:"Longship",bs:50,
+   cost:{Timber:10,Iron:1,Textiles:2},uk:null,cap:5},
+  {n:"Fortress",c:"Fortification",e:"🏰",req:null,bs:1,
+   cost:{Stone:15,Timber:4,Iron:1},uk:null,cap:5},
+];
+
+const ALLRES = ["Timber","Iron","Stone","Food","Textiles","Gold","Nockings"];
+const RI = {Timber:"🪵",Iron:"⚙️",Stone:"🪨",Nockings:"💰",Food:"🌾",Textiles:"🧵",Gold:"💛","Iron/Gold":"⛏️"};
+const CRES = ["Timber","Iron","Stone","Food","Textiles","Gold","Nockings"];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const SK = "ccrp9_v3";
+function defState(){return{year:712,res:{Timber:0,Iron:0,Stone:0,Food:0,Textiles:0,Gold:0,Nockings:0},cities:[],hist:[],nci:1,nai:1};}
+let S=defState();
+
+// ui state (not saved)
+let curPage="ov", selCity=null, ciTab="b";
+let pTab="b", pFilt="All", pExp=null;
+let Q=[], qnid=1; // planner queue
+
+// ═══════════════════════════════════════════════════════
+// SAVE / LOAD
+// ═══════════════════════════════════════════════════════
+function save(){try{localStorage.setItem(SK,JSON.stringify(S));}catch(e){}}
+function load(){try{const r=localStorage.getItem(SK);if(r)S=JSON.parse(r);}catch(e){S=defState();}}
+function resetAll(){
+  if(!confirm("Reset ALL data? Cannot be undone.")) return;
+  localStorage.removeItem(SK); S=defState(); Q=[]; selCity=null;
+  renderAll(); toast("Data reset.");
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const fmt=n=>Number(n).toLocaleString();
+const fmtD=n=>n===0?"±0":(n>0?"+":"")+fmt(n);
+function uid(){return S.nai++;}
+function getBD(name){return BD.find(b=>b.n===name);}
+function getUD(name){return UD.find(u=>u.n===name);}
+
+function bldCost(def,lvl){
+  const t={};
+  for(const[r,v]of Object.entries(def.build))t[r]=(t[r]||0)+v;
+  for(let i=2;i<=lvl;i++)for(const[r,v]of Object.entries(def.up))t[r]=(t[r]||0)+v;
+  return t;
+}
+function upgCost(def){// one level up cost
+  const t={};for(const[r,v]of Object.entries(def.up))t[r]=(t[r]||0)+v;return t;
+}
+function bldOut(def,lvl,dep){
+  if(def.ot==="res")return{[def.or]:dep*lvl};
+  return{Nockings:def.nk*lvl};
+}
+function bldUK(def,lvl){
+  if(!def.uk)return{};
+  const t={};for(const[r,v]of Object.entries(def.uk))t[r]=v*lvl;return t;
+}
+function unitCost(def,qty){
+  const t={};for(const[r,v]of Object.entries(def.cost))t[r]=(t[r]||0)+(v*qty);return t;
+}
+function unitUK(def,qty){
+  if(!def.uk)return{};
+  const t={};for(const[r,v]of Object.entries(def.uk))t[r]=(t[r]||0)+(v*qty);return t;
+}
+function madd(t,s){for(const[k,v]of Object.entries(s))t[k]=(t[k]||0)+v;}
+
+function popFoodUpk(city){return Math.floor((city.pop||0)/10000);}
+
+function annuals(){
+  const inc={},upk={};
+  for(const city of S.cities){
+    for(const b of city.blds){
+      const def=getBD(b.n);if(!def)continue;
+      const lvl=b.upg?(typeof b.upg==="number"?b.upg:b.lvl+1):b.lvl;
+      madd(inc,bldOut(def,lvl,b.dep||1));
+      madd(upk,bldUK(def,b.lvl));
+    }
+    for(const u of city.units){
+      const def=getUD(u.n);if(!def)continue;
+      madd(upk,unitUK(def,u.qty));
+    }
+    const pf=popFoodUpk(city);
+    if(pf>0)upk.Food=(upk.Food||0)+pf;
+  }
+  return{inc,upk};
+}
+function netAnn(){
+  const{inc,upk}=annuals();
+  const net={};
+  for(const k of new Set([...Object.keys(inc),...Object.keys(upk)]))
+    net[k]=(inc[k]||0)-(upk[k]||0);
+  return{inc,upk,net};
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function nav(p){
+  curPage=p;
+  document.querySelectorAll(".page").forEach(el=>el.classList.remove("active"));
+  document.getElementById("page-"+p).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach((b,i)=>b.classList.toggle("active",["ov","ci","pl"][i]===p));
+  if(p==="ov")renderOV();
+  if(p==="ci")renderCI();
+  if(p==="pl")renderPL();
+}
+
+// ═══════════════════════════════════════════════════════
+// RESOURCE BAR
+// ═══════════════════════════════════════════════════════
+function renderResBar(){
+  document.getElementById("yr-badge").textContent="Year "+S.year;
+  const{net}=netAnn();
+  const keys=ALLRES.filter(r=>S.res[r]||net[r]);
+  document.getElementById("res-chips").innerHTML=keys.map(r=>{
+    const v=S.res[r]||0,d=net[r]||0;
+    const cls=d>0?"pos":d<0?"neg":"zer";
+    const ds=d!==0?`<span class="rd ${cls}">${fmtD(d)}</span>`:"";
+    return `<div class="rc" title="${r}"><span class="ri">${RI[r]||"📦"}</span><span class="rn">${r}</span><span class="rv">${fmt(v)}</span>${ds}</div>`;
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════════════════════
+function renderOV(){
+  const{inc,upk,net}=netAnn();
+  // resource table
+  const t=document.getElementById("ov-res-tbl");
+  t.innerHTML=`<tr><th>Resource</th><th style="text-align:right">Amount</th><th style="text-align:right">Net/yr</th></tr>`;
+  for(const r of ALLRES){
+    const v=S.res[r]||0,d=net[r]||0,cls=d>0?"pos":d<0?"neg":"zer";
+    t.innerHTML+=`<tr><td>${RI[r]||""} ${r}</td><td class="rval">${fmt(v)}</td><td class="delta ${cls}">${fmtD(d)}</td></tr>`;
+  }
+  // adj select
+  const sel=document.getElementById("adj-res");
+  sel.innerHTML=ALLRES.map(r=>`<option value="${r}">${r}</option>`).join("");
+  // net table
+  const nt=document.getElementById("ov-net-tbl");
+  const keys=ALLRES.filter(r=>(inc[r]||0)!==0||(upk[r]||0)!==0);
+  if(!keys.length){nt.innerHTML=`<tr><td style="color:var(--bdr2);font-style:italic;padding:6px">No buildings assigned to cities yet.</td></tr>`;return;}
+  nt.innerHTML=`<tr><th>Resource</th><th style="text-align:right">Income</th><th style="text-align:right">Upkeep</th><th style="text-align:right">Net</th></tr>`;
+  for(const r of keys){
+    const i=inc[r]||0,u=upk[r]||0,n=net[r]||0,cls=n>0?"pos":n<0?"neg":"zer";
+    nt.innerHTML+=`<tr><td>${RI[r]||""} ${r}</td><td class="delta pos">+${fmt(i)}</td><td class="delta neg">-${fmt(u)}</td><td class="delta ${cls}">${fmtD(n)}</td></tr>`;
+  }
+  renderLog();
+}
+
+function applyAdj(){
+  const r=document.getElementById("adj-res").value;
+  const amt=parseInt(document.getElementById("adj-amt").value)||0;
+  const note=document.getElementById("adj-note").value.trim();
+  if(!amt)return;
+  S.res[r]=(S.res[r]||0)+amt;
+  if(S.res[r]<0)S.res[r]=0;
+  S.hist.push({yr:S.year,note:(note||"Manual adj")+": "+r+" "+fmtD(amt),ch:{[r]:amt}});
+  document.getElementById("adj-amt").value="";
+  document.getElementById("adj-note").value="";
+  save();renderAll();toast(fmtD(amt)+" "+r);
+}
+
+function renderLog(){
+  const el=document.getElementById("hist-log");
+  if(!S.hist.length){el.innerHTML=`<p style="font-size:11px;color:var(--bdr2);padding:6px;font-style:italic">No events yet.</p>`;return;}
+  el.innerHTML=[...S.hist].reverse().map(e=>{
+    const cks=Object.keys(e.ch||{});
+    const chHTML=cks.map(r=>{const v=e.ch[r];return`<span class="${v>0?"log-ch-pos":"log-ch-neg"}">${fmtD(v)} ${r}</span>`;}).join(" &nbsp;");
+    return`<div class="log-entry"><span class="log-yr">Year ${e.yr}</span> — ${e.note||""}${chHTML?`<div style="margin-top:1px;font-size:10px">${chHTML}</div>`:""}</div>`;
+  }).join("");
+}
+function clearLog(){S.hist=[];save();renderLog();}
+
+// ═══════════════════════════════════════════════════════
+// YEAR END
+// ═══════════════════════════════════════════════════════
+function openYearEnd(){
+  const{inc,upk,net}=netAnn();
+  const keys=ALLRES.filter(r=>(inc[r]||0)!==0||(upk[r]||0)!==0);
+  if(!keys.length){alert("No buildings assigned to cities produce any income or upkeep yet.");return;}
+  document.getElementById("ye-next-yr").textContent=S.year+1;
+  let html=`<p style="font-size:12px;color:var(--mut);margin-bottom:12px">Confirm changes for Year ${S.year}:</p>`;
+  html+=`<div class="ye-grid">
+    <div class="ye-col inc"><h3>Income</h3>`;
+  for(const r of keys)if(inc[r]>0)html+=`<div class="ye-row"><span class="yr">${RI[r]||""} ${r}</span><span class="yv pos">+${fmt(inc[r])}</span></div>`;
+  html+=`</div><div class="ye-col exp"><h3>Upkeep</h3>`;
+  for(const r of keys)if(upk[r]>0)html+=`<div class="ye-row"><span class="yr">${RI[r]||""} ${r}</span><span class="yv neg">-${fmt(upk[r])}</span></div>`;
+  html+=`</div><div class="ye-col net"><h3>Net</h3>`;
+  for(const r of keys){const n=net[r]||0;html+=`<div class="ye-row"><span class="yr">${RI[r]||""} ${r}</span><span class="yv ${n>0?"pos":n<0?"neg":"nt"}">${fmtD(n)}</span></div>`;}
+  html+=`</div></div>`;
+  // pending upgrades
+  // Population growth summary
+  const popChanges=S.cities.filter(c=>(c.pop||0)>0).map(c=>({name:c.name,pop:c.pop||0,growth:Math.round((c.pop||0)*0.04)}));
+  if(popChanges.length){
+    html+=`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bdr)"><p style="font-size:11px;color:var(--grn2);margin-bottom:5px">👥 Population Growth (+4%):</p>`;
+    html+=popChanges.map(p=>`<div style="font-size:11px;color:var(--tan)">→ ${p.name}: ${fmt(p.pop)} + ${fmt(p.growth)} = ${fmt(p.pop+p.growth)}</div>`).join("");
+    html+=`</div>`;
+  }
+  const upgs=[];
+  for(const city of S.cities)for(const b of city.blds)if(b.upg)upgs.push({city:city.name,b});
+  const diss=[];
+  for(const city of S.cities)for(const b of city.blds)if(b.dis)diss.push({city:city.name,b});
+  if(upgs.length){
+    html+=`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bdr)"><p style="font-size:11px;color:var(--amb2);margin-bottom:5px">⬆️ Upgrades completing this year:</p>`;
+    html+=upgs.map(x=>`<div style="font-size:11px;color:var(--tan)">→ ${x.b.n} in ${x.city}: Lvl ${x.b.lvl} → ${typeof x.b.upg==="number"?x.b.upg:x.b.lvl+1}</div>`).join("");
+    html+=`</div>`;
+  }
+  if(diss.length){
+    html+=`<div style="margin-top:8px"><p style="font-size:11px;color:var(--red2);margin-bottom:5px">🔨 Buildings dismantling this year:</p>`;
+    html+=diss.map(x=>`<div style="font-size:11px;color:var(--tan)">→ ${x.b.n} in ${x.city}</div>`).join("");
+    html+=`</div>`;
+  }
+  document.getElementById("ye-body").innerHTML=html;
+  openM("m-ye");
+}
+
+function confirmYE(){
+  const{inc,upk,net}=netAnn();
+  const ch={};
+  for(const r of ALLRES){
+    const n=net[r]||0;
+    if(n!==0){S.res[r]=(S.res[r]||0)+n;if(S.res[r]<0)S.res[r]=0;ch[r]=n;}
+  }
+  // complete upgrades, remove dismantles, grow population
+  for(const city of S.cities){
+    for(const b of city.blds){
+      if(b.upg){b.lvl=typeof b.upg==="number"?b.upg:b.lvl+1;b.upg=false;}
+      b._rm=b.dis;
+    }
+    city.blds=city.blds.filter(b=>!b._rm);
+    const growth=Math.round((city.pop||0)*0.04);
+    city.pop=(city.pop||0)+growth;
+  }
+  S.hist.push({yr:S.year,note:"Year end — income & upkeep applied",ch});
+  S.year++;
+  save();closeM("m-ye");renderAll();
+  toast("Year "+( S.year-1)+" complete! Now Year "+S.year+".");
+}
+
+// ═══════════════════════════════════════════════════════
+// CITIES
+// ═══════════════════════════════════════════════════════
+function renderCI(){renderCiList();renderCiEditor();renderDeploySel();}
+
+function renderCiList(){
+  const el=document.getElementById("ci-list");
+  if(!S.cities.length){el.innerHTML=`<p style="font-size:11px;color:var(--bdr2);padding:9px;font-style:italic">No cities yet.</p>`;return;}
+  el.innerHTML=S.cities.map(c=>`
+    <div class="ci-item${c.id===selCity?" sel":""}" onclick="selCityFn(${c.id})">
+      <span style="font-size:15px">🏙️</span>
+      <div style="flex:1;min-width:0">
+        <div class="ci-nm">${c.name}</div>
+        <div class="ci-ct">${c.blds.length} bldg · ${c.units.length} units</div>
+        <div class="ci-pop">👥 ${fmt(c.pop||0)}</div>
+      </div>
+      <span class="ci-del" onclick="event.stopPropagation();delCity(${c.id})">✕</span>
+    </div>`).join("");
+}
+
+function addCity(){
+  const name=prompt("City name:");if(!name||!name.trim())return;
+  const id=S.nci++;
+  const initPop=parseInt(prompt('Starting population (0 to skip):','0'))||0;
+  S.cities.push({id,name:name.trim(),blds:[],units:[],pop:initPop});
+  save();renderCI();selCityFn(id);
+}
+function selCityFn(id){selCity=id;ciTab="b";renderCiList();renderCiEditor();}
+function delSelCity(){if(!selCity)return;if(!confirm("Delete this city?"))return;delCity(selCity);}
+function delCity(id){
+  S.cities=S.cities.filter(c=>c.id!==id);
+  if(selCity===id)selCity=null;
+  save();renderCI();
+}
+function renameCity(){
+  const city=S.cities.find(c=>c.id===selCity);if(!city)return;
+  const n=prompt("New name:",city.name);if(!n||!n.trim())return;
+  city.name=n.trim();save();renderCI();
+}
+
+function setCiTab(t){
+  ciTab=t;
+  document.querySelectorAll(".ci-tab").forEach((b,i)=>b.classList.toggle("active",["b","m","p"][i]===t));
+  renderCiBody();
+}
+
+function renderCiEditor(){
+  const city=S.cities.find(c=>c.id===selCity);
+  const ed=document.getElementById("ci-editor"),nc=document.getElementById("no-city");
+  if(!city){ed.style.display="none";nc.style.display="flex";return;}
+  ed.style.display="flex";nc.style.display="none";
+  document.getElementById("ci-editor-nm").textContent="🏙️ "+city.name;
+  renderCiBody();
+}
+
+function renderCiBody(){
+  const city=S.cities.find(c=>c.id===selCity);if(!city)return;
+  const el=document.getElementById("ci-body");
+  if(ciTab==="b"){
+    const addBtn=`<button class="btn bg btn-sm" onclick="openAddM('b')">+ Add Building</button>`;
+    if(!city.blds.length){el.innerHTML=`<p style="color:var(--bdr2);font-style:italic;font-size:13px;padding:14px 0">${addBtn}</p>`;return;}
+    el.innerHTML=`<div style="margin-bottom:9px">${addBtn}</div>`+city.blds.map(b=>bldRow(b,city)).join("");
+  }else if(ciTab==="m"){
+    const addBtn=`<button class="btn bblu btn-sm" onclick="openAddM('m')">+ Add Unit</button>`;
+    if(!city.units.length){el.innerHTML=`<p style="color:var(--bdr2);font-style:italic;font-size:13px;padding:14px 0">${addBtn}</p>`;return;}
+    el.innerHTML=`<div style="margin-bottom:9px">${addBtn}</div>`+city.units.map(u=>unitRow(u,city)).join("");
+  }else{
+    renderPopTab(city,el);
+  }
+}
+
+function renderPopTab(city,el){
+  const pop=city.pop||0;
+  const growth=Math.round(pop*0.04);
+  const foodUpk=popFoodUpk(city);
+  el.innerHTML=`
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:480px">
+    <div class="card">
+      <div class="card-hdr">👥 Population — ${city.name}</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px">
+        <div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px">Current</div>
+          <div style="font-size:26px;color:var(--gold);font-family:'Cinzel',serif">${fmt(pop)}</div></div>
+        <div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px">Growth/yr (+4%)</div>
+          <div style="font-size:26px;color:var(--grn2)">+${fmt(growth)}</div></div>
+        <div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px">Food upkeep/yr</div>
+          <div style="font-size:26px;color:var(--red2)">-${foodUpk} <span style="font-size:13px">🌾/yr</span></div></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <label style="font-size:11px;color:var(--mut)">Set population:</label>
+        <input type="number" id="pop-set-val" style="width:110px" value="${pop}" min="0">
+        <button class="btn bgh btn-sm" onclick="setPopDirect(${city.id})">Set</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr">🔀 Transfer Population</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <label style="font-size:11px;color:var(--mut)">Transfer</label>
+        <input type="number" id="pop-xfer-amt" style="width:100px" value="1000" min="1">
+        <label style="font-size:11px;color:var(--mut)">people to:</label>
+        <select id="pop-xfer-dest" style="flex:1;min-width:100px">
+          ${S.cities.filter(c=>c.id!==city.id).map(c=>`<option value="${c.id}">${c.name} (${fmt(c.pop||0)})</option>`).join("")||'<option disabled>No other cities</option>'}
+        </select>
+        <button class="btn bamb btn-sm" onclick="transferPop(${city.id})">Transfer</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setPopDirect(cid){
+  const city=S.cities.find(c=>c.id===cid);if(!city)return;
+  const v=Math.max(0,parseInt(document.getElementById("pop-set-val").value)||0);
+  const old=city.pop||0;city.pop=v;
+  S.hist.push({yr:S.year,note:`Population set in ${city.name}: ${fmt(old)} → ${fmt(v)}`,ch:{}});
+  save();renderCiBody();renderCiList();renderResBar();toast("Population updated.");
+}
+
+function transferPop(fromId){
+  const from=S.cities.find(c=>c.id===fromId);if(!from)return;
+  const toId=parseInt(document.getElementById("pop-xfer-dest").value);
+  const to=S.cities.find(c=>c.id===toId);if(!to){alert("Select a destination city.");return;}
+  const amt=Math.max(1,parseInt(document.getElementById("pop-xfer-amt").value)||0);
+  if((from.pop||0)<amt){alert(`Not enough population. ${from.name} only has ${fmt(from.pop||0)}.`);return;}
+  from.pop=(from.pop||0)-amt;
+  to.pop=(to.pop||0)+amt;
+  S.hist.push({yr:S.year,note:`Transferred ${fmt(amt)} people from ${from.name} to ${to.name}`,ch:{}});
+  save();renderCiBody();renderCiList();renderResBar();toast(`Transferred ${fmt(amt)} people to ${to.name}.`);
+}
+
+function bldRow(b,city){
+  const def=getBD(b.n);if(!def)return"";
+  const out=bldOut(def,b.lvl,b.dep||1),uk=bldUK(def,b.lvl);
+  const outS=Object.entries(out).map(([r,v])=>`<span class="chip ch-out">${RI[r]||""} ${fmt(v)} ${r}/yr</span>`).join("");
+  const ukS=Object.entries(uk).map(([r,v])=>`<span class="chip ch-upk">-${v} ${r}/yr</span>`).join("");
+  const upgS=b.upg?`<span class="chip ch-upg">⬆️ → Lvl ${typeof b.upg==="number"?b.upg:b.lvl+1}</span>`:"";
+  const disS=b.dis?`<span class="chip ch-dis">🔨 Dismantling</span>`:"";
+  const depIn=def.ot==="res"?`<input type="number" style="width:46px;font-size:11px;padding:1px 3px" value="${b.dep||1}" min="0" max="999" title="Deposit" onchange="setDep(${city.id},${b.id},this.value)" oninput="setDep(${city.id},${b.id},this.value)">`:""
+  return`<div class="arow${b.upg?" upg":""}${b.dis?" dis":""}">
+    <div class="ar-ico">${def.e}</div>
+    <div class="ar-inf">
+      <div class="ar-nm">${b.n} <span style="font-size:11px;color:var(--gold2)">Lvl ${b.lvl}</span>${b.dep>0&&def.ot==="res"?` <span style="font-size:10px;color:var(--mut)">dep ${b.dep}</span>`:""}</div>
+      <div class="ar-sub">${def.c}${def.req?" · "+def.req:""}</div>
+      <div class="ar-chips">${outS}${ukS}${upgS}${disS}</div>
+    </div>
+    <div class="ar-acts">
+      ${depIn}
+      ${!b.upg&&!b.dis?`<button class="btn bamb btn-xs" onclick="schedUpg(${city.id},${b.id})" title="Schedule upgrade">⬆️</button>`:""}
+      ${b.upg?`<button class="btn bgh btn-xs" onclick="cancelUpg(${city.id},${b.id})" title="Cancel upgrade">↺</button>`:""}
+      ${!b.dis?`<button class="btn bred btn-xs" onclick="schedDis(${city.id},${b.id})" title="Dismantle at year end">🔨</button>`:`<button class="btn bgh btn-xs" onclick="cancelDis(${city.id},${b.id})">↺</button>`}
+      <button class="btn bred btn-xs" onclick="removeAsset(${city.id},'b',${b.id})" title="Remove now">✕</button>
+    </div>
+  </div>`;
+}
+
+function unitRow(u,city){
+  const def=getUD(u.n);if(!def)return"";
+  const uk=unitUK(def,u.qty);
+  const ukS=Object.entries(uk).map(([r,v])=>`<span class="chip ch-upk">-${v} ${r}/yr</span>`).join("");
+  const capS=def.cap?`<span class="chip ch-cap">⚓ ${def.cap*u.qty} cap</span>`:"";
+  return`<div class="arow">
+    <div class="ar-ico">${def.e}</div>
+    <div class="ar-inf">
+      <div class="ar-nm">${u.n} <span style="font-size:11px;color:var(--blu2)">${fmt(u.qty*def.bs)} units</span></div>
+      <div class="ar-sub">${def.c}${def.req?" · "+def.req:""}</div>
+      <div class="ar-chips">${ukS}${capS}</div>
+    </div>
+    <div class="ar-acts">
+      <button class="btn bgh btn-xs" onclick="chgUQty(${city.id},${u.id},-1)">−</button>
+      <input type="number" style="width:48px;font-size:11px;padding:1px 3px" value="${u.qty}" min="1" max="9999"
+        onchange="setUQty(${city.id},${u.id},this.value)" oninput="setUQty(${city.id},${u.id},this.value)">
+      <button class="btn bgh btn-xs" onclick="chgUQty(${city.id},${u.id},1)">+</button>
+      <span style="font-size:10px;color:var(--dark)">×${def.bs}</span>
+      <button class="btn bred btn-xs" onclick="removeAsset(${city.id},'m',${u.id})">✕</button>
+    </div>
+  </div>`;
+}
+
+function setDep(cid,bid,v){
+  const city=S.cities.find(c=>c.id===cid);if(!city)return;
+  const b=city.blds.find(x=>x.id===bid);if(!b)return;
+  b.dep=Math.max(0,parseInt(v)||0);save();renderResBar();if(curPage==="ov")renderOV();
+}
+function schedUpg(cid,bid){
+  const city=S.cities.find(c=>c.id===cid);if(!city)return;
+  const b=city.blds.find(x=>x.id===bid);if(!b)return;
+  const def=getBD(b.n);
+  const lvlStr=prompt(`Upgrade ${b.n} (currently Lvl ${b.lvl}).\nUpgrade to level:`,b.lvl+1);
+  if(!lvlStr)return;
+  const targetLvl=parseInt(lvlStr);
+  if(isNaN(targetLvl)||targetLvl<=b.lvl){alert("Target level must be greater than current level.");return;}
+  // Cost is sum of upgrade costs for each level step
+  const steps=targetLvl-b.lvl;
+  const perStep=upgCost(def);
+  const totalCost={};for(const[r,v]of Object.entries(perStep))totalCost[r]=v*steps;
+  const cs=Object.entries(totalCost).map(([r,v])=>`${v} ${r}`).join(", ");
+  if(!confirm(`Upgrade ${b.n} Lvl ${b.lvl} → ${targetLvl} (${steps} level${steps>1?"s":""})\nTotal cost deducted now: ${cs}\nCompletes at year end.`))return;
+  const ch={};for(const[r,v]of Object.entries(totalCost)){S.res[r]=(S.res[r]||0)-v;ch[r]=-v;}
+  b.upg=targetLvl; // store target level instead of boolean
+  S.hist.push({yr:S.year,note:`Upgrade scheduled: ${b.n} in ${city.name} → Lvl ${targetLvl}`,ch});
+  save();renderAll();toast(`Upgrade scheduled: Lvl ${b.lvl} → ${targetLvl}.`);
+}
+function cancelUpg(cid,bid){
+  const city=S.cities.find(c=>c.id===cid);const b=city.blds.find(x=>x.id===bid);
+  const def=getBD(b.n);
+  const targetLvl=typeof b.upg==="number"?b.upg:b.lvl+1;
+  const steps=targetLvl-b.lvl;
+  const perStep=upgCost(def);
+  const totalCost={};for(const[r,v]of Object.entries(perStep))totalCost[r]=v*steps;
+  if(!confirm(`Cancel upgrade (Lvl ${b.lvl} → ${targetLvl}) and refund cost?`))return;
+  const ch={};for(const[r,v]of Object.entries(totalCost)){S.res[r]=(S.res[r]||0)+v;ch[r]=v;}
+  b.upg=false;S.hist.push({yr:S.year,note:`Upgrade cancelled: ${b.n} in ${city.name}`,ch});
+  save();renderAll();toast("Upgrade cancelled, cost refunded.");
+}
+function schedDis(cid,bid){
+  const city=S.cities.find(c=>c.id===cid);const b=city.blds.find(x=>x.id===bid);
+  if(!confirm(`Mark ${b.n} for dismantling? Will be removed at year end.`))return;
+  b.dis=true;save();renderCiBody();
+}
+function cancelDis(cid,bid){
+  const city=S.cities.find(c=>c.id===cid);const b=city.blds.find(x=>x.id===bid);
+  b.dis=false;save();renderCiBody();
+}
+function chgUQty(cid,uid,d){
+  const city=S.cities.find(c=>c.id===cid);const u=city.units.find(x=>x.id===uid);
+  u.qty=Math.max(1,u.qty+d);save();renderCiBody();renderResBar();
+}
+function setUQty(cid,uid,v){
+  const city=S.cities.find(c=>c.id===cid);const u=city.units.find(x=>x.id===uid);
+  u.qty=Math.max(1,parseInt(v)||1);save();renderCiBody();renderResBar();
+}
+function removeAsset(cid,type,aid){
+  if(!confirm("Remove now?"))return;
+  const city=S.cities.find(c=>c.id===cid);
+  if(type==="b")city.blds=city.blds.filter(b=>b.id!==aid);
+  else city.units=city.units.filter(u=>u.id!==aid);
+  save();renderCI();renderResBar();
+}
+
+// add asset modal
+let _addType="b";
+function openAddM(type){
+  _addType=type;
+  const city=S.cities.find(c=>c.id===selCity);if(!city)return;
+  document.getElementById("m-add-ttl").textContent=(type==="b"?"🏗️ Add Building":"⚔️ Add Unit")+" — "+city.name;
+  const defs=type==="b"?BD:UD;
+  let html="";
+  if(type==="b"){
+    html+=`<div style="display:flex;gap:7px;align-items:center;margin-bottom:7px">
+      <label style="font-size:11px;color:var(--mut);white-space:nowrap">Building:</label>
+      <select id="m-add-sel" style="flex:1">${defs.map(d=>`<option value="${d.n}">${d.e} ${d.n}</option>`).join("")}</select>
+    </div>
+    <div style="display:flex;gap:7px;align-items:center;margin-bottom:7px">
+      <label style="font-size:11px;color:var(--mut)">Level:</label>
+      <input type="number" id="m-add-lvl" style="width:60px" value="1" min="1" max="99">
+      <label style="font-size:11px;color:var(--mut)">Deposit:</label>
+      <input type="number" id="m-add-dep" style="width:60px" value="1" min="0" max="999">
+    </div>
+    <p style="font-size:11px;color:var(--mut)">No resources are deducted here — use the Planner to calculate costs and deploy.</p>`;
+  }else{
+    html+=`<div style="display:flex;gap:7px;align-items:center;margin-bottom:7px">
+      <label style="font-size:11px;color:var(--mut);white-space:nowrap">Unit:</label>
+      <select id="m-add-sel" style="flex:1">${defs.map(d=>`<option value="${d.n}">${d.e} ${d.n} (per ${d.bs})</option>`).join("")}</select>
+    </div>
+    <div style="display:flex;gap:7px;align-items:center;margin-bottom:7px">
+      <label style="font-size:11px;color:var(--mut)">Batches:</label>
+      <input type="number" id="m-add-qty" style="width:60px" value="1" min="1" max="9999">
+      <span id="m-add-ct" style="font-size:11px;color:var(--mut)"></span>
+    </div>`;
+  }
+  document.getElementById("m-add-body").innerHTML=html;
+  if(type==="m"){
+    const update=()=>{
+      const def=UD.find(d=>d.n===document.getElementById("m-add-sel").value);
+      const qty=parseInt(document.getElementById("m-add-qty").value)||1;
+      document.getElementById("m-add-ct").textContent=def?`= ${qty*def.bs} units`:"";
+    };
+    document.getElementById("m-add-sel").onchange=update;
+    document.getElementById("m-add-qty").oninput=update;
+    update();
+  }
+  document.getElementById("m-add-ok").onclick=confirmAdd;
+  openM("m-add");
+}
+function confirmAdd(){
+  const city=S.cities.find(c=>c.id===selCity);if(!city)return;
+  const name=document.getElementById("m-add-sel").value;
+  if(_addType==="b"){
+    const lvl=Math.max(1,parseInt(document.getElementById("m-add-lvl").value)||1);
+    const dep=Math.max(0,parseInt(document.getElementById("m-add-dep").value)||1);
+    city.blds.push({id:uid(),n:name,lvl,dep,upg:false,dis:false});
+  }else{
+    const qty=Math.max(1,parseInt(document.getElementById("m-add-qty").value)||1);
+    city.units.push({id:uid(),n:name,qty});
+  }
+  save();closeM("m-add");renderCI();renderResBar();toast("Added!");
+}
+
+// ═══════════════════════════════════════════════════════
+// PLANNER
+// ═══════════════════════════════════════════════════════
+function renderPL(){renderPFilters();renderPList();renderQTotals();renderNetBar();renderDeploySel();}
+
+function renderDeploySel(){
+  const s=document.getElementById("deploy-sel");if(!s)return;
+  const cur=s.value;
+  s.innerHTML=`<option value="">— Deploy to city —</option>`+S.cities.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  if(cur)s.value=cur;
+}
+
+function setPTab(t){pTab=t;pFilt="All";pExp=null;
+  document.querySelectorAll(".pl-tab").forEach((b,i)=>b.classList.toggle("active",["b","m"][i]===t));
+  renderPFilters();renderPList();
+}
+function renderPFilters(){
+  const items=pTab==="b"?BD:UD;
+  const cats=["All",...new Set(items.map(d=>d.c))];
+  document.getElementById("pl-flbl").textContent=pTab==="b"?"Filter":"Unit Type";
+  document.getElementById("pl-fbtns").innerHTML=cats.map(c=>
+    `<button class="fbtn${c===pFilt?" active":""}" onclick="setPFilt('${c.replace(/'/g,"\\'")}')">
+    ${c==="All"?"All":c.replace("Resource-Producing","Resource").replace("Nock ","")}</button>`).join("");
+}
+function setPFilt(f){pFilt=f;renderPFilters();renderPList();}
+
+function renderPList(){
+  const items=pTab==="b"?BD:UD;
+  const fil=pFilt==="All"?items:items.filter(d=>d.c===pFilt);
+  document.getElementById("pl-itmlist").innerHTML=fil.map(d=>{
+    const isExp=pExp===d.n;
+    if(pTab==="b"){
+      const bc=CRES.filter(r=>d.build[r]).map(r=>`${d.build[r]} ${r}`).join(" · ");
+      const uc=CRES.filter(r=>d.up[r]).map(r=>`${d.up[r]} ${r}`).join(" · ");
+      const od=d.ot==="res"?`${d.or} = deposit × level`:`${fmt(d.nk)} Nockings × level`;
+      const ukd=d.uk?Object.entries(d.uk).map(([r,v])=>`${v} ${r}/level`).join(", "):"None";
+      return`<div class="brow${isExp?" exp":""}" onclick="toggleExp('${d.n}')">
+        <div class="brow-top"><div><div class="bnm">${d.e} ${d.n}</div></div>
+          <button class="addbtn" onclick="event.stopPropagation();qAdd('${d.n}','b')">+</button></div>
+        <div class="bdet">
+          ${d.req?`<div>⚠️ ${d.req}</div>`:""}
+          <div>📈 ${od}</div><div>🔁 Upkeep: ${ukd}</div>
+          <div><span class="clbl">Build:</span> ${bc}</div>
+          <div><span class="clbl">Upgrade:</span> ${uc}</div>
+        </div></div>`;
+    }else{
+      const cs=CRES.filter(r=>d.cost[r]).map(r=>`${d.cost[r]} ${r}`).join(" · ");
+      const us=d.uk?Object.entries(d.uk).map(([r,v])=>`${v} ${r}`).join(", "):"None";
+      return`<div class="brow${isExp?" exp":""}" onclick="toggleExp('${d.n}')">
+        <div class="brow-top"><div><div class="bnm">${d.e} ${d.n}</div><div class="bsub">per ${d.bs}</div></div>
+          <button class="addbtn" onclick="event.stopPropagation();qAdd('${d.n}','m')">+</button></div>
+        <div class="bdet">
+          ${d.req?`<div>⚠️ ${d.req}</div>`:""}
+          <div><span class="clbl">Cost (per ${d.bs}):</span> ${cs}</div>
+          <div><span class="clbl">Upkeep/yr:</span> ${us}</div>
+          ${d.cap?`<div>⚓ Capacity: ${d.cap}/ship</div>`:""}
+        </div></div>`;
+    }
+  }).join("");
+}
+function toggleExp(n){pExp=pExp===n?null:n;renderPList();}
+
+function qAdd(name,type){
+  const data=type==="b"?getBD(name):getUD(name);if(!data)return;
+  const item=type==="b"?{id:qnid++,type:"b",data,lvl:1,dep:1}:{id:qnid++,type:"m",data,qty:1};
+  Q.push(item);
+  document.getElementById("empty-msg").style.display="none";
+  document.getElementById("q-count").textContent=Q.length+" item"+(Q.length!==1?"s":"");
+  const div=document.createElement("div");
+  div.className="qi "+(type==="m"?"mil":"bld");div.id="qi-"+item.id;
+  div.innerHTML=qiHTML(item);
+  document.getElementById("q-list").appendChild(div);
+  div.scrollIntoView({behavior:"smooth",block:"nearest"});
+  renderQTotals();renderNetBar();
+}
+
+function qiHTML(item){
+  const d=item.data;
+  if(item.type==="b"){
+    const lvl=item.lvl,dep=item.dep;
+    const cost=bldCost(d,lvl),out=bldOut(d,lvl,dep),uk=bldUK(d,lvl);
+    const cc=CRES.filter(r=>cost[r]).map(r=>pch("c",r,cost[r])).join("");
+    const oc=Object.entries(out).map(([r,v])=>pch("o",r,v)).join("");
+    const uc=Object.entries(uk).map(([r,v])=>pch("u",r,v)).join("");
+    return`<div class="qi-top">
+      <div class="qi-nm"><div class="n">${d.e} ${d.n}</div><div class="p">${d.c}</div></div>
+      <div class="qi-ctrls">
+        <div class="cg">
+          <button class="lvbtn" onclick="qChgLvl(${item.id},-1)">−</button>
+          <input class="ni lvi" type="number" min="1" max="99" value="${lvl}" oninput="qSetLvl(${item.id},this.value)">
+          <button class="lvbtn" onclick="qChgLvl(${item.id},1)">+</button>
+          <span class="clb">Lvl</span>
+        </div>
+        ${d.ot==="res"?`<div class="cg"><span class="clb">Dep:</span>
+          <input class="ni dpi" type="number" min="0" max="9999" value="${dep}" oninput="qSetDep(${item.id},this.value)">
+        </div>`:""}
+      </div>
+      <button class="rmbtn" onclick="qRm(${item.id})">✕</button>
+    </div>
+    <div class="qi-bot">
+      <div class="chg"><div class="cgl lc">Build Cost</div><div class="chs">${cc}</div></div>
+      <div class="cdiv"></div>
+      <div class="chg"><div class="cgl lo">Output/yr</div><div class="chs">${oc}</div></div>
+      ${uc?`<div class="cdiv"></div><div class="chg"><div class="cgl lu">Upkeep/yr</div><div class="chs">${uc}</div></div>`:""}
+    </div>`;
+  }else{
+    const qty=item.qty;
+    const cost=unitCost(d,qty),uk=unitUK(d,qty);
+    const total=qty*d.bs;
+    const cc=CRES.filter(r=>cost[r]).map(r=>pch("c",r,cost[r])).join("");
+    const uc=Object.entries(uk).map(([r,v])=>pch("u",r,v)).join("");
+    const pc=d.cap?pch("p","Capacity",d.cap*qty):"";
+    return`<div class="qi-top">
+      <div class="qi-nm"><div class="n">${d.e} ${d.n}</div><div class="p">${d.c} · ${fmt(total)} units</div></div>
+      <div class="qi-ctrls">
+        <div class="cg">
+          <button class="lvbtn" onclick="qChgQty(${item.id},-1)">−</button>
+          <input class="ni qti" type="number" min="1" max="9999" value="${qty}" oninput="qSetQty(${item.id},this.value)">
+          <button class="lvbtn" onclick="qChgQty(${item.id},1)">+</button>
+          <span class="clb">×${d.bs}</span>
+        </div>
+      </div>
+      <button class="rmbtn" onclick="qRm(${item.id})">✕</button>
+    </div>
+    <div class="qi-bot">
+      <div class="chg"><div class="cgl lc">Cost</div><div class="chs">${cc}</div></div>
+      ${uc?`<div class="cdiv"></div><div class="chg"><div class="cgl lu">Upkeep/yr</div><div class="chs">${uc}</div></div>`:""}
+      ${pc?`<div class="cdiv"></div><div class="chg"><div class="cgl lp">Capacity</div><div class="chs">${pc}</div></div>`:""}
+    </div>`;
+  }
+}
+function pch(cls,res,val){return`<div class="cc ${cls}"><div class="cr">${RI[res]||"📦"} ${res}</div><div class="cv">${fmt(val)}</div></div>`;}
+
+function qRef(item){const el=document.getElementById("qi-"+item.id);if(el)el.innerHTML=qiHTML(item);}
+function qChgLvl(id,d){const i=Q.find(x=>x.id===id);if(!i)return;i.lvl=Math.max(1,i.lvl+d);qRef(i);renderQTotals();renderNetBar();}
+function qSetLvl(id,v){const i=Q.find(x=>x.id===id);if(!i)return;i.lvl=Math.max(1,parseInt(v)||1);qRef(i);renderQTotals();renderNetBar();}
+function qSetDep(id,v){const i=Q.find(x=>x.id===id);if(!i)return;i.dep=Math.max(0,parseInt(v)||0);qRef(i);renderQTotals();renderNetBar();}
+function qChgQty(id,d){const i=Q.find(x=>x.id===id);if(!i)return;i.qty=Math.max(1,i.qty+d);qRef(i);renderQTotals();renderNetBar();}
+function qSetQty(id,v){const i=Q.find(x=>x.id===id);if(!i)return;i.qty=Math.max(1,parseInt(v)||1);qRef(i);renderQTotals();renderNetBar();}
+function qRm(id){
+  Q=Q.filter(x=>x.id!==id);
+  const el=document.getElementById("qi-"+id);if(el)el.remove();
+  document.getElementById("q-count").textContent=Q.length+" item"+(Q.length!==1?"s":"");
+  if(!Q.length){const l=document.getElementById("q-list"),e=document.getElementById("empty-msg");l.appendChild(e);e.style.display="flex";}
+  renderQTotals();renderNetBar();
+}
+function clearQ(){
+  Q=[];
+  const l=document.getElementById("q-list");l.innerHTML="";
+  const e=document.getElementById("empty-msg");l.appendChild(e);e.style.display="flex";
+  document.getElementById("q-count").textContent="0 items";
+  renderQTotals();renderNetBar();
+}
+
+function renderNetBar(){
+  const bar=document.getElementById("netbar");if(!bar)return;
+  if(!Q.length){bar.innerHTML=`<span style="font-size:11px;color:var(--bdr2)">Add items to see net output</span>`;return;}
+  const inc={},upk={};
+  for(const item of Q){
+    if(item.type==="b"){madd(inc,bldOut(item.data,item.lvl,item.dep));madd(upk,bldUK(item.data,item.lvl));}
+    else madd(upk,unitUK(item.data,item.qty));
+  }
+  const net={};
+  for(const r of ALLRES){const n=(inc[r]||0)-(upk[r]||0);if(n!==0)net[r]=n;}
+  bar.innerHTML=Object.entries(net).length
+    ?Object.entries(net).map(([r,v])=>{const cls=v>0?"pos":v<0?"neg":"zer";return`<span class="nch ${cls}">${RI[r]||""} ${r}: ${fmtD(v)}/yr</span>`;}).join("")
+    :`<span style="font-size:11px;color:var(--bdr2)">No annual effect from this queue</span>`;
+}
+
+function renderQTotals(){
+  const area=document.getElementById("pl-tots"),nt=document.getElementById("pl-no-tot");
+  if(!Q.length){area.innerHTML="";nt.style.display="";return;}
+  nt.style.display="none";
+  const costs={},outputs={},upkeeps={};
+  for(const item of Q){
+    if(item.type==="b"){madd(costs,bldCost(item.data,item.lvl));madd(outputs,bldOut(item.data,item.lvl,item.dep));madd(upkeeps,bldUK(item.data,item.lvl));}
+    else{madd(costs,unitCost(item.data,item.qty));madd(upkeeps,unitUK(item.data,item.qty));}
+  }
+  let html="";
+  const ck=CRES.filter(r=>costs[r]);
+  if(ck.length){html+=`<div class="psl c">Build Costs</div>`;html+=ck.map(r=>`<div class="tcrd"><div class="tr">${RI[r]||""} ${r}</div><div class="tv">${fmt(costs[r])}</div></div>`).join("");}
+  const ok=Object.keys(outputs).filter(r=>outputs[r]>0);
+  if(ok.length){html+=`<hr class="sdiv"><div class="psl o">Output/yr</div>`;html+=ok.map(r=>`<div class="tcrd out"><div class="tr">${RI[r]||"📦"} ${r}</div><div class="tv">${fmt(outputs[r])}</div></div>`).join("");}
+  const uk=Object.keys(upkeeps);
+  if(uk.length){html+=`<hr class="sdiv"><div class="psl u">Upkeep/yr</div>`;html+=uk.map(r=>`<div class="tcrd upk"><div class="tr">${RI[r]||""} ${r}</div><div class="tv">${fmt(upkeeps[r])}</div></div>`).join("");}
+  area.innerHTML=html;
+}
+
+function deployQ(){
+  const cid=parseInt(document.getElementById("deploy-sel").value);
+  const city=S.cities.find(c=>c.id===cid);
+  if(!city){alert("Select a city to deploy to.");return;}
+  if(!Q.length){alert("Queue is empty.");return;}
+  const totalCost={};
+  for(const item of Q){
+    if(item.type==="b")madd(totalCost,bldCost(item.data,item.lvl));
+    else madd(totalCost,unitCost(item.data,item.qty));
+  }
+  const cs=Object.entries(totalCost).map(([r,v])=>`${v} ${r}`).join(", ")||"(none)";
+  if(!confirm(`Deploy ${Q.length} item(s) to ${city.name}?\n\nTotal cost: ${cs}\n\nResources will be deducted from treasury.`))return;
+  const ch={};
+  for(const[r,v]of Object.entries(totalCost)){S.res[r]=(S.res[r]||0)-v;ch[r]=-v;}
+  for(const item of Q){
+    if(item.type==="b")city.blds.push({id:uid(),n:item.data.n,lvl:item.lvl,dep:item.dep,upg:false,dis:false});
+    else city.units.push({id:uid(),n:item.data.n,qty:item.qty});
+  }
+  S.hist.push({yr:S.year,note:`Deployed ${Q.length} item(s) to ${city.name}`,ch});
+  save();clearQ();renderAll();toast("Deployed to "+city.name+"!");
+}
+
+// ═══════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════
+function openM(id){document.getElementById(id).classList.add("open");}
+function closeM(id){document.getElementById(id).classList.remove("open");}
+document.querySelectorAll(".moverlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("open");}));
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let _tt;
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove("show"),2600);}
+
+// ═══════════════════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════════════════
+function renderAll(){
+  renderResBar();
+  if(curPage==="ov")renderOV();
+  if(curPage==="ci")renderCI();
+  if(curPage==="pl")renderPL();
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+load();renderAll();
+</script>
+</body>
+</html>
