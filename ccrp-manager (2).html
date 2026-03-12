@@ -426,9 +426,12 @@ td.delta.pos{color:var(--grn2)}td.delta.neg{color:var(--red2)}td.delta.zer{color
 // GAME DATA
 // ═══════════════════════════════════════════════════════
 const BD = [ // Buildings def
-  {n:"Mine",c:"Resource-Producing",e:"⛏️",req:null,
+  {n:"Iron Mine",c:"Resource-Producing",e:"⛏️",req:null,
    build:{Timber:6,Iron:6,Stone:5,Nockings:1000},up:{Timber:3,Iron:3,Stone:2,Nockings:500},
-   ot:"res",or:"Iron/Gold",uk:null},
+   ot:"res",or:"Iron",uk:null},
+  {n:"Gold Mine",c:"Resource-Producing",e:"💛",req:null,
+   build:{Timber:6,Iron:6,Stone:5,Nockings:1000},up:{Timber:3,Iron:3,Stone:2,Nockings:500},
+   ot:"res",or:"Gold",uk:null},
   {n:"Lumber Camp",c:"Resource-Producing",e:"🪵",req:null,
    build:{Timber:5,Iron:10,Nockings:500},up:{Timber:2,Iron:5,Nockings:500},
    ot:"res",or:"Timber",uk:null},
@@ -551,7 +554,26 @@ let Q=[], qnid=1; // planner queue
 // SAVE / LOAD
 // ═══════════════════════════════════════════════════════
 function save(){try{localStorage.setItem(SK,JSON.stringify(S));}catch(e){}}
-function load(){try{const r=localStorage.getItem(SK);if(r)S=JSON.parse(r);}catch(e){S=defState();}}
+function load(){
+  try{
+    const r=localStorage.getItem(SK);
+    if(r){
+      S=JSON.parse(r);
+      // Ensure new fields exist on old saves
+      if(!S.trades)S.trades=[];
+      if(!S.nti)S.nti=1;
+      // Migrate old "Mine" buildings to "Iron Mine"
+      for(const city of (S.cities||[])){
+        if(!city.blds)city.blds=[];
+        if(!city.units)city.units=[];
+        if(!city.pop)city.pop=0;
+        for(const b of city.blds){
+          if(b.n==="Mine")b.n="Iron Mine";
+        }
+      }
+    }
+  }catch(e){S=defState();}
+}
 function resetAll(){
   if(!confirm("Reset ALL data? Cannot be undone.")) return;
   localStorage.removeItem(SK); S=defState(); Q=[]; selCity=null;
