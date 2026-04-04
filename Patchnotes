@@ -1,0 +1,3 @@
+Patchnotes v 0.6.1
+- Added toggle for if settlement is existing (free), or needs to be paid for
+- Added "charge now" feature for trade deals so it is more friendly to single/immediate trades.
